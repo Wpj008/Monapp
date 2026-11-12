@@ -9,6 +9,8 @@ use App\Models\Team;
 use Core\Controller;
 use Core\Request;
 use Core\ValidationException;
+use App\Models\User;
+use App\Models\UserTeam;
 
 final class TeamController extends Controller
 {//class TeamController permet de gérer les méthodes liées à une fonctionnalité spécifique, ici la gestion des équipes.
@@ -103,4 +105,112 @@ final class TeamController extends Controller
             
             ]);
     }
+
+
+    public function addMember(Request $request): void
+    {// La méthode addMember est responsable de l'ajout d'un membre à une équipe spécifique.
+    // Elle prend un objet Request en paramètre, qui contient les données de la requête,
+    // y compris l'identifiant de l'équipe et l'identifiant de l'utilisateur à ajouter.
+
+
+        $teamId = (int) $request->param('id');
+        if(Team::find($teamId) === null) {
+            $this->session->flash('error','Equipe introuvable');
+            $this->redirect('/teams');
+        }
+
+        // Récupération de l'identifiant de l'utilisateur à ajouter à l'équipe à partir des données de la requête.
+        $userId = (int) $request->input('user_id', 0);// Si l'identifiant de l'utilisateur n'est pas fourni dans la requête, la valeur par défaut est 0.
+
+        if($userId <= 0 || User::find($userId) === null) {// si l'identifiant de l'utilisateur est invalide ou si l'utilisateur n'existe pas dans la base de données, un message d'erreur est affiché et l'utilisateur est redirigé vers la page de l'équipe.
+            $this->session->flash('error','Utilisateur introuvable');
+            $this->redirect('/teams/' . $teamId);
+        }
+
+        $exists = UserTeam::table()// instance de la table UserTeam est utilisée pour vérifier si l'utilisateur est déjà membre de l'équipe.
+        ->where('team_id', '=', $teamId)
+        ->where('user_id', '=', $userId)
+        ->first();
+
+
+        if($exists !== null) {// si l'utilisateur est déjà membre de l'équipe, un message d'erreur est affiché et l'utilisateur est redirigé vers la page de l'équipe.
+            $this->session->flash('error','Utilisateur déjà membre de l\'équipe');
+            $this->redirect('/teams/' . $teamId);
+
+
+
+        }
+
+        $now = time();
+
+        UserTeam::insert([// si l'utilisateur n'est pas déjà membre de l'équipe, une nouvelle entrée est insérée dans la table UserTeam pour associer l'utilisateur à l'équipe.
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        $this->session->flash('success','Utilisateur ajouté à l\'équipe');
+        $this->redirect('/teams/' . $teamId);
+    }
+
+    public function removeMember(Request $request): void
+    {// La méthode removeMember est responsable de la suppression d'un membre d'une équipe spécifique.
+    // Elle prend un objet Request en paramètre, qui contient les données de la requête,
+    // y compris l'identifiant de l'équipe et l'identifiant de l'utilisateur à supprimer.
+
+        $teamId = (int) $request->param('id');
+        $userId = (int) $request->input('user_id');
+
+ 
+        UserTeam::table()
+        ->where('team_id', '=', $teamId)
+        ->where('user_id', '=', $userId)
+        ->delete();
+
+
+        $this->session->flash('success','Utilisateur retiré de l\'équipe');
+        $this->redirect('/teams/' . $teamId);
+    }
+
+/** 
+ * @return list<array<string, mixed>>
+ */
+
+private function membersForTeam(int $teamId): array
+    {// La méthode membersForTeam est une méthode privée qui récupère la liste des membres d'une équipe spécifique.
+    // Elle prend l'identifiant de l'équipe en paramètre et retourne un tableau contenant les informations des membres de l'équipe.
+
+    // La requête SQL récupère l'identifiant, le nom d'utilisateur, l'adresse e-mail, le rôle et le job de chaque utilisateur qui est membre de l'équipe spécifiée.
+        return User::query('SELECT users.id, users.username, users.email, users.role, users.job FROM users 
+            INNER JOIN userteam ON userteam.user_id = users.id
+            WHERE userteam.team_id = ?
+            ORDER BY users.username ASC', 
+            
+            
+            [$teamId]
+            
+            );
+
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function availableUsersForTeam(int $teamId): array
+    {// La méthode availableUsersForTeam est une méthode privée qui récupère la liste des utilisateurs disponibles pour être ajoutés à une équipe spécifique.
+    // Elle prend l'identifiant de l'équipe en paramètre et retourne un tableau contenant les informations des utilisateurs disponibles.
+
+// La requête SQL récupère l'identifiant, le nom d'utilisateur et l'adresse e-mail de chaque utilisateur qui n'est pas déjà membre de l'équipe spécifiée.    
+        return User::query('SELECT users.id, users.username, users.email FROM users 
+            WHERE users.id NOT IN (SELECT userteam.user_id FROM userteam WHERE userteam.team_id = ?)
+             ORDER BY users.username ASC',
+             
+             
+             [$teamId] 
+             
+             );
+
+            
+    } 
 }
