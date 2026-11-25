@@ -21,7 +21,9 @@ final class AuthMiddleware implements Middleware
     }
 
     public function handle(Request $request, callable $next): mixed
-    {
+    {// La méthode handle est responsable de la gestion de l'authentification pour les requêtes entrantes.
+    // Elle vérifie d'abord si la requête est une requête API en utilisant la méthode isApi() de l'objet Request.
+    
         if ($request->isApi()) {
             $header = (string) $request->header('Authorization');
             if (!str_starts_with($header, 'Bearer ')) {

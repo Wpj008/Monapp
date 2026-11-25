@@ -15,8 +15,10 @@
                     <th>ID</th>
                     <th>Nom d'utilisateur</th>
                     <th>Email</th>
+                    <th>Métier</th>
                     <th>Créé le</th>
                     <th>Mis à jour le</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,8 +27,17 @@
                         <td>{{ user.id }}</td>
                         <td>{{ user.username }}</td>
                         <td>{{ user.email }}</td>
+                        <td>{{ user.role == 'ouvrier' ? user.job : '-' }}</td>
+                        
+                
                         <td>{{ user.created_at }}</td>
                         <td>{{ user.updated_at }}</td>
+                        <td>
+                            <form method="POST" action="{{ url('/deleteuser') }}">
+                                {{ csrf_field() }}
+                                <input type="hidden" id="id" name="id" value="{{ user.id }}">
+                                <button style="background:red" type="submit">Supprimer</button>
+                            </form>
                     </tr>
                 {% endfor %}
             </tbody>

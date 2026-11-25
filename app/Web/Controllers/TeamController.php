@@ -18,14 +18,7 @@ final class TeamController extends Controller
     public function index(Request $request): void
     {// La méthode index est responsable de l'affichage de la liste des équipes.
 
-    // La requête SQL récupère l'identifiant et le nom de chaque équipe, ainsi que le nombre de membres
-    // associés à chaque équipe en utilisant une jointure gauche avec la table userteam. Les résultats sont regroupés par identifiant
-    // et nom d'équipe, puis triés par nom d'équipe par ordre croissant.
-
-        $teams = Team::query('SELECT teams.id, teams.name, COUNT(userteam.id) AS members_count FROM teams 
-            LEFT JOIN userteam ON userteam.team_id = teams.id
-            GROUP BY teams.id, teams.name
-            ORDER BY teams.name ASC');
+        $teams = Team::getAndCountTeam();// La méthode getAndCountTeam() du modèle Team est utilisée pour exécuter la requête SQL et récupérer les données des équipes depuis la base de données.
 
 
         $this->view('teams/index.twig', ['teams' => $teams]);// La vue 'teams/index.twig' est affichée avec les données des équipes récupérées de la base de données.
@@ -182,15 +175,7 @@ private function membersForTeam(int $teamId): array
     // Elle prend l'identifiant de l'équipe en paramètre et retourne un tableau contenant les informations des membres de l'équipe.
 
     // La requête SQL récupère l'identifiant, le nom d'utilisateur, l'adresse e-mail, le rôle et le job de chaque utilisateur qui est membre de l'équipe spécifiée.
-        return User::query('SELECT users.id, users.username, users.email, users.role, users.job FROM users 
-            INNER JOIN userteam ON userteam.user_id = users.id
-            WHERE userteam.team_id = ?
-            ORDER BY users.username ASC', 
-            
-            
-            [$teamId]
-            
-            );
+        return User::membersForTeam($teamId);
 
     }
 
@@ -201,16 +186,9 @@ private function membersForTeam(int $teamId): array
     {// La méthode availableUsersForTeam est une méthode privée qui récupère la liste des utilisateurs disponibles pour être ajoutés à une équipe spécifique.
     // Elle prend l'identifiant de l'équipe en paramètre et retourne un tableau contenant les informations des utilisateurs disponibles.
 
-// La requête SQL récupère l'identifiant, le nom d'utilisateur et l'adresse e-mail de chaque utilisateur qui n'est pas déjà membre de l'équipe spécifiée.    
-        return User::query('SELECT users.id, users.username, users.email FROM users 
-            WHERE users.id NOT IN (SELECT userteam.user_id FROM userteam WHERE userteam.team_id = ?)
-             ORDER BY users.username ASC',
-             
-             
-             [$teamId] 
-             
-             );
+    return User::availableUsersForTeam($teamId);
+    } 
 
             
-    } 
+    
 }

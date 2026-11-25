@@ -12,9 +12,9 @@ use Core\DTO;
  */
 final class UserDTO extends DTO
 {
-    public int $id;
+    public ?int $id;//(faudra renommer ou creer un autre DTO pour l'édition de l'utilisateur)
     public string $username;
     public string $email;
-    public ?string $role = null;
+    public ?string $role = "ouvrier";
     public ?string $job = null;
 }

@@ -1,0 +1,39 @@
+{% extends 'layout.twig' %}
+
+{% block title %}Ajout d'un utilisateur{% endblock %}
+
+{% block content %}
+    <h1>Ajout d'un utilisateur</h1>
+    <form method="post" action="{{ url('/users') }}">
+        {{ csrf_field() }}
+        <label for="username">Nom d'utilisateur  </label>
+            <input id="username" type="text" name="username" required value="{{ old.username ?? '' }}">
+       
+        <label for="email">Email  </label>
+            <input id="email" type="email" name="email" required value="{{ old.email ?? '' }}">
+        
+            <label for="password">Mot de passe</label>
+            <input id="password" type="password" name="password" required>
+
+
+        <label for="role">Rôle</label>
+            <select id="role" name="role">
+                <option value="ouvrier">Ouvrier</option>
+                <option value="gestion">Gestion</option>
+                <option value="admin">Administrateur</option>
+            </select>
+        
+        <label for="job">Métier</label>
+             <select id="job" name="job_id">
+
+                {% for job in jobs %}
+                    <option value="{{ job.id }}">{{ job.job }}</option>
+                {% endfor %}
+            </select>
+
+            <br><br>
+
+        <button type="submit">Créer l'utilisateur</button>
+ 
+    </form>
+{% endblock %}

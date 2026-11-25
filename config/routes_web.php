@@ -13,20 +13,30 @@ use App\Middleware\LoggingMiddleware;
 return [
     ['GET', '/', 'App\\Web\\Controllers\\HomeController#index', ['middleware' => [LoggingMiddleware::class]]],
 
+    // Routes d'authentification
     ['GET', '/login', 'App\\Web\\Controllers\\AuthController#showLogin'],
     ['POST', '/login', 'App\\Web\\Controllers\\AuthController#login'],
     ['GET', '/register', 'App\\Web\\Controllers\\AuthController#showRegister'],
     ['POST', '/register', 'App\\Web\\Controllers\\AuthController#register'],
     ['POST', '/logout', 'App\\Web\\Controllers\\AuthController#logout', ['middleware' => [AuthMiddleware::class]]],
 
+    // Routes pour la gestion des utilisateurs
     ['GET', '/users', 'App\\Web\\Controllers\\UserController#index', ['middleware' => [AuthMiddleware::class]]],
+    ['GET', '/adduser', 'App\\Web\\Controllers\\UserController#create', ['middleware' => [AuthMiddleware::class]]],
+    ['POST', '/users', 'App\\Web\\Controllers\\UserController#store', ['middleware' => [AuthMiddleware::class]]],
+    ["POST","/deleteuser", "App\\Web\\Controllers\\UserController#remove",["middleware"=> [AuthMiddleware::class]]],
 
+
+    // Routes pour la gestion des équipes
     ["GET","/teams", "App\\Web\\Controllers\\TeamController#index",["middleware"=> [AuthMiddleware::class]]],
     ["GET","/teams/create", "App\\Web\\Controllers\\TeamController#create",["middleware"=> [AuthMiddleware::class]]],
     ["POST","/teams", "App\\Web\\Controllers\\TeamController#store",["middleware"=> [AuthMiddleware::class]]],
     ["GET","/teams/[i:id]", "App\\Web\\Controllers\\TeamController#show",["middleware"=> [AuthMiddleware::class]]],
     ["POST","/teams/[i:id]/members", "App\\Web\\Controllers\\TeamController#addMember",["middleware"=> [AuthMiddleware::class]]],
     ["POST","/teams/[i:id]/members/[i:userId]/delete", "App\\Web\\Controllers\\TeamController#removeMember",["middleware"=> [AuthMiddleware::class]]],
+
+
+
 
     ['GET', '/todos', 'App\\Web\\Controllers\\TodoController#index', ['middleware' => [AuthMiddleware::class]]],
     ['GET', '/todos/create', 'App\\Web\\Controllers\\TodoController#create', ['middleware' => [AuthMiddleware::class]]],

@@ -42,21 +42,38 @@
     {% endif %}
 
     <h2>Ajouter un utilisateur</h2>
-    {% if available_users is empty %}
-        <p>Tous les utilisateurs sont deja dans cette equipe.</p>
-    {% else %}
-        <form method="post" action="{{ url('/teams/' ~ team.id ~ '/members') }}">
-            {{ csrf_field() }}
-            <label>
-                Utilisateur
-                <select name="user_id" required>
-                    <option value="">Choisir un utilisateur</option>
-                    {% for user in available_users %}
-                        <option value="{{ user.id }}">{{ user.username }} ({{ user.email }})</option>
-                    {% endfor %}
-                </select>
-            </label>
-            <button type="submit">Ajouter a l'equipe</button>
-        </form>
-    {% endif %}
+   {% if available_users is not empty %}
+
+    <form method="post" action="{{ url('/teams/' ~ team.id ~ '/members') }}">
+        {{ csrf_field() }}
+
+        <label>
+            Utilisateur
+
+            <select name="user_id" required>
+                <option value="">Choisir un utilisateur</option>
+
+                {% for user in available_users %}
+
+                    {% if user.role == 'ouvrier' %}
+
+                        <option value="{{ user.id }}">
+                            {{ user.username }} ({{ user.email }} {{ user.role ?? '-' }})
+                        </option>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </select>
+        </label>
+
+        <button type="submit">Ajouter à l'équipe</button>
+    </form>
+
+{% else %}
+
+    <p>Aucun utilisateur disponible</p>
+
+{% endif %}
 {% endblock %}
